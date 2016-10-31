@@ -1,0 +1,48 @@
+#!/bin/bash
+# Set up our services locally
+
+mkdir -p services
+cd services
+
+#PLAYER SERVICE
+
+#Set to the latest version
+if cd demo_service_player; then
+  git pull
+else
+  git clone git@github.com:mbdietrich/demo_service_player.git demo_service_player
+  cd demo_service_player
+fi
+npm install
+
+#Spawn service in a new process and note its PID
+coffee server.coffee &
+player_pid=$!
+
+cd ..
+
+#SCORE SERVICE
+
+#Set to the latest version
+if cd demo_service_score; then
+  git pull
+else
+  git clone git@github.com:mbdietrich/demo_service_score.git demo_service_score
+  cd demo_service_score
+fi
+npm install
+
+#Spawn service in a new process and note its PID
+
+coffee server.coffee &
+score_pid=$!
+
+# #Run the integration test suite
+cd ../..
+
+sleep 3
+
+mocha
+
+kill $player_pid
+kill $score_pid
